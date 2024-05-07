@@ -1,15 +1,47 @@
 import yaml
+import re
 from numpy import random
 import numpy as np
 import uuid
 import random as rnd
+from openai import OpenAI
+from tenacity import retry, wait_random_exponential, stop_after_attempt
+from dotenv import dotenv_values
+from langchain_community.llms import Ollama
+
+prompt_starter = [
+    'I need the materials that',
+    'Give me the materials that',
+    'List the materials that',
+    'Search for the materials that',
+    'Look for the materials that'
+]
+
+config = dotenv_values(".env")
+client = OpenAI(
+    api_key=config['OPENAI_API_KEY'],
+)
+
+
+@retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
+def chat_bot_api(message, model=config['GPT_MODEL']):
+    try:
+        llm = Ollama(model="llama3:70b")
+        llm.base_url = 'http://172.28.105.30/backend'
+        response = llm.invoke(message)
+        return response
+    except Exception as e:
+        print("Unable to generate ChatCompletion response")
+        print(f"Exception: {e}")
+        return e
+
 
 def my_random_string(string_length=10):
     """Returns a random string of length string_length."""
-    random = str(uuid.uuid4()) # Convert UUID format to a Python string.
-    random = random.upper() # Make all characters uppercase.
-    random = random.replace("-","") # Remove the UUID '-'.
-    return random[0:string_length] # Return the random string.
+    random = str(uuid.uuid4())  # Convert UUID format to a Python string.
+    random = random.upper()  # Make all characters uppercase.
+    random = random.replace("-", "")  # Remove the UUID '-'.
+    return random[0:string_length]  # Return the random string.
 
 
 def random_date_generator(start_date, range_in_days):
@@ -19,8 +51,23 @@ def random_date_generator(start_date, range_in_days):
 
 
 def get_raw_prompts(key):
-    prompt_key = f'Based on the path "{key}" write 3 possible short exact enough human readable prompt and 3 short readable prompt containing abbreviation parameter that addresses this path. Just list them. Write it in the following format'
-    return ['I need key.a', 'I need key.b', 'I need key.b', 'I need key.b', 'I need key.b', 'I need key.b']
+    message = (f'Based on the path "{key}" write 4 possible short exact enough human readable prompt and 2 short '
+               f'readable prompt containing abbreviation parameter that addresses this path. Just list them and'
+               f'wrap each one around @.'
+               f'Write it in the following format'
+               f'1) <First Short exact prompts>'
+               f'2) <Second Short exact prompts>'
+               f'3) <Third Short exact prompts>'
+               f'3) <Forth Short exact prompts>'
+               f'4) <First Short prompts with abbreviations>'
+               f'5) <Second Short prompts with abbreviations>'
+               f'start prompts using any of {prompt_starter}'
+               )
+    response = chat_bot_api(message)
+
+    # Finding all matches in the text
+    matches = re.findall(r"@([^@]+)@", response)
+    return matches
 
 
 # Load the YAML file
