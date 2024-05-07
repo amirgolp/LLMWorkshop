@@ -20,7 +20,7 @@ def random_date_generator(start_date, range_in_days):
 
 def get_raw_prompts(key):
     prompt_key = f'Based on the path "{key}" write 3 possible short exact enough human readable prompt and 3 short readable prompt containing abbreviation parameter that addresses this path. Just list them. Write it in the following format'
-    return ['I need key.a', 'I need key.b']
+    return ['I need key.a', 'I need key.b', 'I need key.b', 'I need key.b', 'I need key.b', 'I need key.b']
 
 
 # Load the YAML file
@@ -28,11 +28,24 @@ with open('quantities.yaml', 'r') as file:
     data = yaml.safe_load(file)
 
 
-def make_quantity_query(key, val, query_type):
-    query = dict()
-    query_key = f'{key}{query_type}'
-    query[query_key] = val
-    return query
+def make_quantity_query(key, val, query_type, gte=None, lte=None):
+    query = None
+    if query_type != 'gte_lte' and query_type != 'gte' and query_type != 'lte':
+        query = dict()
+        query_key = f'{key}{query_type}'
+        query[query_key] = val
+        return query
+    else:
+        if gte and lte:
+            query = dict()
+            query[key] = dict(gte=gte, lte=lte)
+        elif gte:
+            query = dict()
+            query[key] = dict(gte=gte)
+        elif lte:
+            query = dict()
+            query[key] = dict(lte=lte)
+        return query
 
 
 def list_to_text(items, sep):
@@ -46,13 +59,13 @@ def list_to_text(items, sep):
 
 # Loop over all keys and print them
 def print_keys(data, indent=''):
-    n = 0
+    n_prompts = 0
     for key, value in data.items():
         # description = value['description']
         repeats = 'an' if value['repeats'] else 'not an'
         type = value['type']
 
-        query_types = [':all', ':any', '']
+        query_types = [':all', ':any', '', 'gte', 'lte', 'gte_lte']
 
         values = None
 
@@ -81,15 +94,30 @@ def print_keys(data, indent=''):
 
                         quantity_query = None
                         if query_type == '':
-                            prompt = raw_prompt + f' with the value {val}'
+                            prompt = raw_prompt + f' that is {val}'
                             quantity_query = make_quantity_query(key, val, query_type)
-                        elif query_type == ':any' or query_type == ':all':
+                        elif type == 'str' and query_type == ':any' or query_type == ':all':
                             multi_val = rnd.sample(values, random.randint(2, min(len(values), 4) + 1))
                             if query_type == ':any':
                                 prompt = raw_prompt + f' that could be any of the {list_to_text(multi_val, "or")}'
                             else:
                                 prompt = raw_prompt + f' that includes all of the {list_to_text(multi_val, "and")}'
                             quantity_query = make_quantity_query(key, multi_val, query_type)
+                        elif (query_type == 'gte_lte', query_type == 'gte', query_type == 'lte') and (type == 'int' or type == 'int32' or type == 'int64' or type == 'float' or type == 'float32' or type == 'float64'):
+                            range = rnd.sample([float(v) for v in values], 2)
+                            if type == 'int' or type == 'int32' or type == 'int64':
+                                range = rnd.sample([int(v) for v in values], 2)
+                            gte = np.min(range)
+                            lte = np.max(range)
+                            if query_type == 'gte_lte':
+                                prompt = raw_prompt + f' between {str(gte)} and {str(lte)}'
+                                quantity_query = make_quantity_query(key, val, query_type, str(gte), str(lte))
+                            elif query_type == 'gte':
+                                prompt = raw_prompt + f' that is grater than {val}'
+                                quantity_query = make_quantity_query(key, val, query_type, str(gte), None)
+                            elif query_type == 'lte':
+                                prompt = raw_prompt + f' that is less than {val}'
+                                quantity_query = make_quantity_query(key, val, query_type, None, str(lte))
 
                         if quantity_query:
                             corresponding_query = dict()
@@ -97,6 +125,9 @@ def print_keys(data, indent=''):
 
                             print(prompt)
                             print(corresponding_query)
+                            n_prompts = n_prompts +1
+
+        print(f'n_prompts = {n_prompts}')
 
 
 
