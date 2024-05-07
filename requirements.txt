@@ -2,12 +2,11 @@ git+https://github.com/nomad-coe/nomad.git
 langchain-core
 langchain-community
 jupyter
-openai~=1.26.0
 requests~=2.31.0
 tenacity~=8.2.3
 pydantic~=1.10.15
 PyYAML~=6.0.1
 python-dotenv~=1.0.1
 transformers~=4.40.2
-torch~=2.3.0+cpu
 numpy~=1.22.4
+python-dotenv~=1.0.1

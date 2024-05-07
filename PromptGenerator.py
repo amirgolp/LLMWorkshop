@@ -4,7 +4,6 @@ from numpy import random
 import numpy as np
 import uuid
 import random as rnd
-from openai import OpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from dotenv import dotenv_values
 from langchain_community.llms import Ollama
