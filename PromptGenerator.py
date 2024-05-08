@@ -168,10 +168,10 @@ def print_keys(data, indent=''):
                                 prompt = raw_prompt + f' between {str(gte)} and {str(lte)}'
                                 quantity_query = make_quantity_query(key, val, query_type, gte, lte)
                             elif query_type == 'gte':
-                                prompt = raw_prompt + f' that is grater than {val}'
+                                prompt = raw_prompt + f' that is grater than {gte}'
                                 quantity_query = make_quantity_query(key, val, query_type, gte, None)
                             elif query_type == 'lte':
-                                prompt = raw_prompt + f' that is less than {val}'
+                                prompt = raw_prompt + f' that is less than {lte}'
                                 quantity_query = make_quantity_query(key, val, query_type, None, lte)
 
                         if quantity_query:
