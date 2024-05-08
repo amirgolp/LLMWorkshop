@@ -8,13 +8,6 @@ from tenacity import retry, wait_random_exponential, stop_after_attempt
 from dotenv import dotenv_values
 from langchain_community.llms import Ollama
 
-prompt_starter = [
-    '"I need the materials that"',
-    '"Give me the materials that"',
-    '"List the materials that"',
-    '"Search for the materials that"',
-    '"Look for the materials that"'
-]
 
 config = dotenv_values(".env")
 llm = Ollama(model="llama3:70b")
@@ -50,22 +43,23 @@ def get_raw_prompts(key):
     key_without_hash = key.replace('#', '.')
 
     message = (f'You are a prompt generator.'
-               f'Based on the path "{key_without_hash}" write 4 possible, short and exact enough human-readable prompt and 2 short'
+               f'Based on the path "{key_without_hash}" write 5 possible, short and exact enough human-readable '
+               f'prompt and 1 short'
                f'readable prompt containing abbreviation parameter that addresses this path. Just list and'
-               f'wrap each one of them with @. Below you will get a schema snippet as input'
-               f'<First Short exact prompts>'
-               f'<Second Short exact prompts>'
-               f'<Third Short exact prompts>'
-               f'<Forth Short exact prompts>'
-               f'<First Short prompts with abbreviations>'
-               f'<Second Short prompts with abbreviations>'
-               f'start prompts using any of {prompt_starter} but use the entire strings'
+               f'Wrap each one of them with @. Below you will get a schema snippet as output'
+               f'<First prompt>'
+               f'<Second prompt>'
+               f'<Third prompt>'
+               f'<Forth prompt>'
+               f'<Fifth prompt>'
+               f'<First prompt with abbreviations>'
+               f'Start each prompt with the term "Give me ". Do not explain or describe anything the prompts.'
                )
     response = chat_bot_api(message)
 
     # Finding all matches in the text
     matches = re.findall(r"@([^@]+)@", response)
-    return matches
+    return [s.split('Give me ')[1] for s in matches]
 
 
 # Load the YAML file
