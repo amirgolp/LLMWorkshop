@@ -42,30 +42,36 @@ def random_date_generator(start_date, range_in_days):
 
 
 def get_raw_prompts(key):
-    key_without_hash = key.replace('#', '.')
+    try:
+        key_without_hash = key.replace('#', '.')
 
-    message = (f'You are a prompt generator.'
-               f'Based on the path "{key_without_hash}" write 5 possible, short and exact enough human-readable '
-               f'prompt and 1 short'
-               f'readable prompt containing abbreviation parameter that addresses this path. Just list and'
-               f'Wrap each one of them with @. Below you will get a schema snippet as output'
-               f'<First prompt>'
-               f'<Second prompt>'
-               f'<Third prompt>'
-               f'<Forth prompt>'
-               f'<Fifth prompt>'
-               f'<First prompt with abbreviations>'
-               f'Start each prompt with the term "Give me ". Do not explain or describe anything the prompts.'
-               )
-    response = chat_bot_api(message)
-    if not response:
-        return response
+        message = (f''
+                   f'Based on the path "{key_without_hash}" write 5 possible, short and exact enough human-readable '
+                   f'prompt and 1 short'
+                   f'readable prompt containing abbreviation parameter that addresses this path. Just list and'
+                   f'Wrap each one of them with @. Below you will get the format:'
+                   f'<First prompt>'
+                   f'<Second prompt>'
+                   f'<Third prompt>'
+                   f'<Forth prompt>'
+                   f'<Fifth prompt>'
+                   f'<First prompt with abbreviations>'
+                   f'Start each prompt with the term "Give me ". Do not explain or describe anything the prompts.'
+                   f'The prompts should be all in the context of material science. For example, if you see front, do not'
+                   f'convert it to frontend.'
+                   )
+        response = chat_bot_api(message)
+        if not response:
+            return None
 
-    # Finding all matches in the text
-    matches = re.findall(r"@([^@]+)@", response)
-    cleaned_data = [s.split('Give me ')[1] for s in matches]
-    cleaned_data = [re.sub(r'.?\n', '', s) for s in cleaned_data]
-    return cleaned_data
+        # Finding all matches in the text
+        matches = re.findall(r"@([^@]+)@", response)
+        cleaned_data = [re.sub(r"(?i)\bgive me\s?", "", s) for s in matches]
+        cleaned_data = [re.sub(r'.?\n', '', s) for s in cleaned_data]
+
+        return cleaned_data
+    except:
+        return None
 
 
 # Load the YAML file
