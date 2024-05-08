@@ -27,7 +27,7 @@ class PromptResponseDataset(Dataset):
 
 
 def main():
-    model_path = "facebook/llama-3-70b"  # Adjust the model path if needed
+    model_path = "facebook/llama-3-70b"
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
     model = LlamaForCausalLM.from_pretrained(model_path)
 
@@ -37,11 +37,11 @@ def main():
     dataset = PromptResponseDataset(tokenizer, 'data.json')
     training_args = TrainingArguments(
         output_dir='./results',
-        num_train_epochs=3,  # Adjust epochs, learning rate as necessary
+        num_train_epochs=3,
         per_device_train_batch_size=2,  # Adjust batch size according to your GPU capabilities
         logging_steps=10,
         save_strategy="epoch",
-        report_to="none"  # Adjust as per your reporting needs
+        report_to="none"
     )
 
     trainer = Trainer(
