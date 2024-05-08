@@ -9,21 +9,21 @@ from dotenv import dotenv_values
 from langchain_community.llms import Ollama
 
 prompt_starter = [
-    'I need the materials that',
-    'Give me the materials that',
-    'List the materials that',
-    'Search for the materials that',
-    'Look for the materials that'
+    '"I need the materials that"',
+    '"Give me the materials that"',
+    '"List the materials that"',
+    '"Search for the materials that"',
+    '"Look for the materials that"'
 ]
 
 config = dotenv_values(".env")
+llm = Ollama(model="llama3:70b")
+llm.base_url = 'http://172.28.105.30/backend'
 
 
 @retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
 def chat_bot_api(message, model=config['GPT_MODEL']):
     try:
-        llm = Ollama(model="llama3:70b")
-        llm.base_url = 'http://172.28.105.30/backend'
         response = llm.invoke(message)
         return response
     except Exception as e:
@@ -47,17 +47,19 @@ def random_date_generator(start_date, range_in_days):
 
 
 def get_raw_prompts(key):
-    message = (f'Based on the path "{key}" write 4 possible short exact enough human readable prompt and 2 short '
-               f'readable prompt containing abbreviation parameter that addresses this path. Just list them and'
-               f'wrap each one around @.'
-               f'Write it in the following format'
-               f'1) <First Short exact prompts>'
-               f'2) <Second Short exact prompts>'
-               f'3) <Third Short exact prompts>'
-               f'3) <Forth Short exact prompts>'
-               f'4) <First Short prompts with abbreviations>'
-               f'5) <Second Short prompts with abbreviations>'
-               f'start prompts using any of {prompt_starter}'
+    key_without_hash = key.replace('#', '.')
+
+    message = (f'You are a prompt generator.'
+               f'Based on the path "{key_without_hash}" write 4 possible, short and exact enough human-readable prompt and 2 short'
+               f'readable prompt containing abbreviation parameter that addresses this path. Just list and'
+               f'wrap each one of them with @. Below you will get a schema snippet as input'
+               f'<First Short exact prompts>'
+               f'<Second Short exact prompts>'
+               f'<Third Short exact prompts>'
+               f'<Forth Short exact prompts>'
+               f'<First Short prompts with abbreviations>'
+               f'<Second Short prompts with abbreviations>'
+               f'start prompts using any of {prompt_starter} but use the entire strings'
                )
     response = chat_bot_api(message)
 
@@ -168,10 +170,10 @@ def print_keys(data, indent=''):
 
                             print(prompt)
                             print(corresponding_query)
-                            n_prompts = n_prompts +1
+                            n_prompts = n_prompts + 1
 
         print(f'n_prompts = {n_prompts}')
 
 
-
-print_keys(data)
+if __name__ == "__main__":
+    print_keys(data)
