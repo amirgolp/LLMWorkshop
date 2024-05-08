@@ -13,6 +13,8 @@ config = dotenv_values(".env")
 llm = Ollama(model="llama3:70b")
 llm.base_url = 'http://172.28.105.30/backend'
 
+llm = Ollama(model="llama3:70b")
+llm.base_url = 'http://172.28.105.30/backend'
 
 @retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
 def chat_bot_api(message, model=config['GPT_MODEL']):
@@ -22,7 +24,7 @@ def chat_bot_api(message, model=config['GPT_MODEL']):
     except Exception as e:
         print("Unable to generate ChatCompletion response")
         print(f"Exception: {e}")
-        return e
+        return None
 
 
 def my_random_string(string_length=10):
@@ -56,6 +58,8 @@ def get_raw_prompts(key):
                f'Start each prompt with the term "Give me ". Do not explain or describe anything the prompts.'
                )
     response = chat_bot_api(message)
+    if not response:
+        return response
 
     # Finding all matches in the text
     matches = re.findall(r"@([^@]+)@", response)
@@ -75,25 +79,26 @@ def make_quantity_query(key, val, query_type, gte=None, lte=None):
         query[query_key] = val
         return query
     else:
-        if gte and lte:
+        if gte is not None and lte is not None:
             query = dict()
             query[key] = dict(gte=gte, lte=lte)
-        elif gte:
+        elif gte is not None:
             query = dict()
             query[key] = dict(gte=gte)
-        elif lte:
+        elif lte is not None:
             query = dict()
             query[key] = dict(lte=lte)
         return query
 
 
 def list_to_text(items, sep):
+    str_items = [str(item) for item in items]
     if len(items) == 0:
         return ""
     elif len(items) == 1:
         return items[0]
     else:
-        return ', '.join(items[:-1]) + f' {sep} ' + items[-1]
+        return ', '.join(str_items[:-1]) + f' {sep} ' + str_items[-1]
 
 
 # Loop over all keys and print them
@@ -113,27 +118,30 @@ def print_keys(data, indent=''):
         elif type == 'str':
             values = [my_random_string(10), my_random_string(10), my_random_string(10)]
         elif type == 'bool':
-            values = ['True', 'False', 'True']
+            values = [True, False, True, False]
         elif type == 'int' or type == 'int32' or type == 'int64':
-            values = [str(random.randint(1000)), str(random.randint(1000)), str(random.randint(1000))]
+            values = [random.randint(1000), random.randint(1000), random.randint(1000)]
         elif type == 'float' or type == 'float32' or type == 'float64':
-            values = ["{:.5f}".format(random.randint(10) * random.random()),
-                      "{:.5f}".format(random.randint(10) * random.random()),
-                      "{:.5f}".format(random.randint(10) * random.random())]
+            values = [np.round(random.randint(10) * random.random(), 6),
+                      np.round(random.randint(10) * random.random(), 6),
+                      np.round(random.randint(10) * random.random(), 6),
+                      np.round(random.randint(10) * random.random(), 6),
+                      np.round(random.randint(10) * random.random(), 6)]
         elif type.startswith('<nomad.metainfo.metainfo._Datetime'):
             values = [random_date_generator(f'2010-03-14T15:0{str(random.randint(9))}:20.36', 1000).astype(str),
-                      random_date_generator(f'2010-03-14T15:0{str(random.randint(9))}:32.21', 500).astype(str),
-                      random_date_generator(f'2010-03-14T15:0{str(random.randint(9))}:32.21', 500).astype(str)]
+                      random_date_generator(f'2012-04-14T15:0{str(random.randint(9))}:32.21', 300).astype(str),
+                      random_date_generator(f'1999-06-14T15:0{str(random.randint(9))}:12.21', 1000).astype(str),
+                      random_date_generator(f'2010-02-14T15:0{str(random.randint(9))}:32.21', 1000).astype(str)]
 
         raw_prompts = get_raw_prompts(key)
-        if isinstance(values, list):
+        if raw_prompts and isinstance(values, list):
             for raw_prompt in raw_prompts:
                 for val in values:
                     for query_type in query_types:
 
                         quantity_query = None
                         if query_type == '':
-                            prompt = raw_prompt + f' that is {val}'
+                            prompt = raw_prompt + f' that is {str(val)}'
                             quantity_query = make_quantity_query(key, val, query_type)
                         elif type == 'str' and query_type == ':any' or query_type == ':all':
                             multi_val = rnd.sample(values, random.randint(2, min(len(values), 4) + 1))
@@ -150,13 +158,13 @@ def print_keys(data, indent=''):
                             lte = np.max(range)
                             if query_type == 'gte_lte':
                                 prompt = raw_prompt + f' between {str(gte)} and {str(lte)}'
-                                quantity_query = make_quantity_query(key, val, query_type, str(gte), str(lte))
+                                quantity_query = make_quantity_query(key, val, query_type, gte, lte)
                             elif query_type == 'gte':
                                 prompt = raw_prompt + f' that is grater than {val}'
-                                quantity_query = make_quantity_query(key, val, query_type, str(gte), None)
+                                quantity_query = make_quantity_query(key, val, query_type, gte, None)
                             elif query_type == 'lte':
                                 prompt = raw_prompt + f' that is less than {val}'
-                                quantity_query = make_quantity_query(key, val, query_type, None, str(lte))
+                                quantity_query = make_quantity_query(key, val, query_type, None, lte)
 
                         if quantity_query:
                             corresponding_query = dict()
@@ -166,7 +174,7 @@ def print_keys(data, indent=''):
                             print(corresponding_query)
                             n_prompts = n_prompts + 1
 
-        print(f'n_prompts = {n_prompts}')
+    print(f'n_prompts = {n_prompts}')
 
 
 if __name__ == "__main__":
