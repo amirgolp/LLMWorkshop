@@ -64,7 +64,7 @@ def get_raw_prompts(key):
     # Finding all matches in the text
     matches = re.findall(r"@([^@]+)@", response)
     cleaned_data = [s.split('Give me ')[1] for s in matches]
-    cleaned_data = [re.sub(r'.?\n', '', s) for s in cleaned_data]
+    cleaned_data = [re.sub(r'.?\n', ' ', s) for s in cleaned_data]
     return cleaned_data
 
 
