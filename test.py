@@ -34,7 +34,7 @@ def load_data(filename):
     return processed_texts
 
 
-texts = load_data('prompts/prompts_part0.json')
+texts = load_data('prompts/all_prompts.json')
 
 inputs = tokenizer(texts, return_tensors="pt", padding="max_length", truncation=True, max_length=512)
 
