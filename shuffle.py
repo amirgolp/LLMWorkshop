@@ -67,7 +67,7 @@ def make_final_prompts(primary_prompts):
     return all_p
 
 
-primary_prompts = to_dict('version_8.txt')
+primary_prompts = to_dict('version_9.txt')
 all_final_prompts = make_final_prompts(primary_prompts)
 
 for i in range(20000):
@@ -90,5 +90,5 @@ for i in range(20000):
     if or4 is not None:
         all_final_prompts.append(or4)
 
-with open('all_prompts.json', 'w') as json_file:
+with open('all_prompts_9.json', 'w') as json_file:
     json.dump(all_final_prompts, json_file)
