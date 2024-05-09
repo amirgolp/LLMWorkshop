@@ -9,14 +9,16 @@ tokenizer = AutoTokenizer.from_pretrained(model_path)
 
 model = LlamaForCausalLM.from_pretrained(
     model_path,
-    torch_dtype=torch.float16,  # Using bfloat16 might require specific hardware support (e.g., TPUs or recent GPUs)
+    torch_dtype=torch.float32,
     use_cache=False
 )
 
 model.load_adapter(peft_model_id)
 
-for param in model.parameters():
-    param.requires_grad = True
+# Ensure all model parameters are set to require gradients
+# for param in model.parameters():
+#     param.requires_grad = True
+
 
 def load_data(filename):
     with open(filename, 'r') as file:
@@ -29,21 +31,24 @@ def load_data(filename):
         processed_texts.append(combined_text)
     return processed_texts
 
+
 texts = load_data('all_prompts.json')
 
 inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
 
 from torch.utils.data import Dataset
 
+
 class TextDataset(Dataset):
-    def init(self, encodings):
+    def __init__(self, encodings):
         self.encodings = encodings
 
-    def len(self):
+    def __len__(self):
         return len(self.encodings.input_ids)
 
-    def getitem(self, idx):
+    def __getitem__(self, idx):
         return {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+
 
 train_dataset = TextDataset(inputs)
 
