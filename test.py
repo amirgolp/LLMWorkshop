@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 
 torch.cuda.empty_cache()
 
-model_path = "unsloth/llama-3-8b"
+model_path = "unsloth/llama-3-8b-bnb-4bit"
 peft_model_id = "ybelkada/opt-350m-lora"
 
 
@@ -34,7 +34,7 @@ def load_data(filename):
     return processed_texts
 
 
-texts = load_data('all_prompts.json')
+texts = load_data('prompts/prompts_part0.json')
 
 inputs = tokenizer(texts, return_tensors="pt", padding="max_length", truncation=True, max_length=512)
 
@@ -57,7 +57,7 @@ train_dataset = TextDataset(inputs)
 training_args = TrainingArguments(
     output_dir="./results",
     num_train_epochs=3,
-    per_device_train_batch_size=16,
+    per_device_train_batch_size=4,
     warmup_steps=500,
     weight_decay=0.01,
     logging_dir='./logs',
