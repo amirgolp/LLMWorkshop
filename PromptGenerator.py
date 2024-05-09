@@ -119,33 +119,56 @@ def print_keys(data, indent=''):
 
         query_types = [':all', ':any', '', 'gte', 'lte', 'gte_lte']
 
-        values = None
+        test_values = None
 
         if isinstance(type, list):
-            values = type
+            test_values = type
         elif type == 'str':
-            values = [my_random_string(10), my_random_string(10), my_random_string(10)]
+            test_values = [my_random_string(10), my_random_string(10), my_random_string(10)]
         elif type == 'bool':
-            values = [True, False, True, False]
+            test_values = [True, False, True, False]
         elif type == 'int' or type == 'int32' or type == 'int64':
-            values = [random.randint(1000), random.randint(1000), random.randint(1000)]
+            test_values = [random.randint(1000), random.randint(1000), random.randint(1000)]
         elif type == 'float' or type == 'float32' or type == 'float64':
-            values = [np.round(random.randint(10) * random.random(), 6),
+            test_values = [np.round(random.randint(10) * random.random(), 6),
                       np.round(random.randint(10) * random.random(), 6),
                       np.round(random.randint(10) * random.random(), 6),
                       np.round(random.randint(10) * random.random(), 6),
                       np.round(random.randint(10) * random.random(), 6)]
         elif type.startswith('<nomad.metainfo.metainfo._Datetime'):
-            values = [random_date_generator(f'2010-03-14T15:0{str(random.randint(9))}:20.36', 1000).astype(str),
+            test_values = [random_date_generator(f'2010-03-14T15:0{str(random.randint(9))}:20.36', 1000).astype(str),
                       random_date_generator(f'2012-04-14T15:0{str(random.randint(9))}:32.21', 300).astype(str),
                       random_date_generator(f'1999-06-14T15:0{str(random.randint(9))}:12.21', 1000).astype(str),
                       random_date_generator(f'2010-02-14T15:0{str(random.randint(9))}:32.21', 1000).astype(str)]
 
         raw_prompts = get_raw_prompts(key)
-        if raw_prompts and isinstance(values, list):
+        if raw_prompts and isinstance(test_values, list):
             for raw_prompt in raw_prompts:
-                for val in values:
-                    for query_type in query_types:
+                for query_type in query_types:
+
+                    values = None
+                    if isinstance(type, list):
+                        values = type
+                    elif type == 'str':
+                        values = [my_random_string(10), my_random_string(10), my_random_string(10)]
+                    elif type == 'bool':
+                        values = [True, False, True, False]
+                    elif type == 'int' or type == 'int32' or type == 'int64':
+                        values = [random.randint(1000), random.randint(1000), random.randint(1000)]
+                    elif type == 'float' or type == 'float32' or type == 'float64':
+                        values = [np.round(random.randint(10) * random.random(), 6),
+                                  np.round(random.randint(10) * random.random(), 6),
+                                  np.round(random.randint(10) * random.random(), 6),
+                                  np.round(random.randint(10) * random.random(), 6),
+                                  np.round(random.randint(10) * random.random(), 6)]
+                    elif type.startswith('<nomad.metainfo.metainfo._Datetime'):
+                        values = [
+                            random_date_generator(f'2010-03-14T15:0{str(random.randint(9))}:20.36', 1000).astype(str),
+                            random_date_generator(f'2012-04-14T15:0{str(random.randint(9))}:32.21', 300).astype(str),
+                            random_date_generator(f'1999-06-14T15:0{str(random.randint(9))}:12.21', 1000).astype(str),
+                            random_date_generator(f'2010-02-14T15:0{str(random.randint(9))}:32.21', 1000).astype(str)]
+
+                    for val in values:
 
                         quantity_query = None
                         if query_type == '':
