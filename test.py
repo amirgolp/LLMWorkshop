@@ -3,8 +3,9 @@ import json
 from transformers import AutoTokenizer, LlamaForCausalLM, Trainer, TrainingArguments
 from torch.utils.data import Dataset
 
+torch.cuda.empty_cache()
 
-model_path = "unsloth/llama-3-8b-bnb-4bit"
+model_path = "unsloth/llama-3-8b"
 peft_model_id = "ybelkada/opt-350m-lora"
 
 

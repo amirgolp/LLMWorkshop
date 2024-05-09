@@ -90,5 +90,13 @@ for i in range(20000):
     if or4 is not None:
         all_final_prompts.append(or4)
 
-with open('all_prompts_9.json', 'w') as json_file:
-    json.dump(all_final_prompts, json_file)
+
+def split_list(lst, chunk_size):
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+
+split_lists = split_list(all_final_prompts, 10000)
+for i, sublist in enumerate(split_lists):
+    with open(f'prompts_part{i}.json', 'w') as json_file:
+        json.dump(sublist, json_file)
+        print(len(sublist))
