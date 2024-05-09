@@ -11,13 +11,13 @@ peft_model_id = "ybelkada/opt-350m-lora"
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 model = LlamaForCausalLM.from_pretrained(
     model_path,
-    torch_dtype=torch.float32,
     use_cache=False
 )
 model.load_adapter(peft_model_id)
 
 
 for param in model.parameters():
+    param.data = param.data.float()
     param.requires_grad = True
 
 
@@ -71,3 +71,5 @@ trainer = Trainer(
 )
 
 trainer.train()
+
+model.save_pretrained("query_model")
