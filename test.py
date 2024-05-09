@@ -1,6 +1,8 @@
 import torch
 import json
 from transformers import AutoTokenizer, LlamaForCausalLM, Trainer, TrainingArguments
+from torch.utils.data import Dataset
+
 
 model_path = "unsloth/llama-3-8b-bnb-4bit"
 peft_model_id = "ybelkada/opt-350m-lora"
@@ -35,8 +37,6 @@ def load_data(filename):
 texts = load_data('all_prompts.json')
 
 inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
-
-from torch.utils.data import Dataset
 
 
 class TextDataset(Dataset):
