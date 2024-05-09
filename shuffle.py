@@ -21,11 +21,11 @@ def to_dict(input_file):
 
 
 starting_prompts = [
-    'Write a Nomad query.',
-    'Give me a Nomad query.',
-    'I need a Nomad query.',
-    'A Nomad query.',
-    'Nomad query.'
+    'Write a nomad query.',
+    'Give me a nomad query.',
+    'I need a nomad query.',
+    'A nomad query.',
+    'nomad query.'
 ]
 
 n_total = 0
@@ -56,14 +56,15 @@ def shuffle(primary_prompts, n, semantic):
 
 
 def make_final_prompts(primary_prompts):
-    all = []
+    all_p = [dict(prompt=p, response={}) for p in starting_prompts]
+    all_p.append(dict(prompt='an empty nomad query', response={}))
     for item in primary_prompts:
         prompt = item['prompt']
         query = item['completion']
         final_dict = dict(prompt=f'{random.sample(starting_prompts, 1)[0]} {prompt}', response=query)
-        all.append(final_dict)
+        all_p.append(final_dict)
 
-    return all
+    return all_p
 
 
 primary_prompts = to_dict('version_8.txt')
