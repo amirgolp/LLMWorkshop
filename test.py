@@ -9,14 +9,14 @@ tokenizer = AutoTokenizer.from_pretrained(model_path)
 
 model = LlamaForCausalLM.from_pretrained(
     model_path,
-    torch_dtype=torch.float32,  # Using bfloat16 might require specific hardware support (e.g., TPUs or recent GPUs)
+    torch_dtype=torch.float16,  # Using bfloat16 might require specific hardware support (e.g., TPUs or recent GPUs)
     use_cache=False
 )
 
 model.load_adapter(peft_model_id)
 
-# for param in model.parameters():
-#     param.requires_grad = True
+for param in model.parameters():
+    param.requires_grad = True
 
 def load_data(filename):
     with open(filename, 'r') as file:
