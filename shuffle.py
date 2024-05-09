@@ -48,26 +48,46 @@ def shuffle(primary_prompts, n, semantic):
     final_query = {semantic: {}}
     for d in queries:
         final_query[semantic].update(d)
-    final_dict = dict(prompt=f'{random.sample(starting_prompts, 1)[0]} {final_prompt}', completion=final_query)
+    final_dict = dict(prompt=f'{random.sample(starting_prompts, 1)[0]} {final_prompt}', response=final_query)
     if len(final_query[semantic]) == n:
-        print(final_dict)
+        return final_dict
     else:
         return None
 
 
 def make_final_prompts(primary_prompts):
+    all = []
     for item in primary_prompts:
         prompt = item['prompt']
         query = item['completion']
-        final_dict = dict(prompt=f'{random.sample(starting_prompts, 1)[0]} {prompt}', completion=query)
-        print(final_dict)
+        final_dict = dict(prompt=f'{random.sample(starting_prompts, 1)[0]} {prompt}', response=query)
+        all.append(final_dict)
+
+    return all
 
 
 primary_prompts = to_dict('version_8.txt')
-make_final_prompts(primary_prompts)
-and_prompts_level2 = [shuffle(primary_prompts, 2, 'and') for i in range(20000)]
-and_prompts_level3 = [shuffle(primary_prompts, 3, 'and') for i in range(20000)]
-and_prompts_level4 = [shuffle(primary_prompts, 4, 'and') for i in range(20000)]
-or_prompts_level2 = [shuffle(primary_prompts, 2, 'or') for i in range(20000)]
-or_prompts_level3 = [shuffle(primary_prompts, 3, 'or') for i in range(20000)]
-or_prompts_level4 = [shuffle(primary_prompts, 4, 'or') for i in range(20000)]
+all_final_prompts = make_final_prompts(primary_prompts)
+
+for i in range(20000):
+    and2 = shuffle(primary_prompts, 2, 'and')
+    and3 = shuffle(primary_prompts, 3, 'and')
+    and4 = shuffle(primary_prompts, 4, 'and')
+    or2 = shuffle(primary_prompts, 2, 'or')
+    or3 = shuffle(primary_prompts, 3, 'or')
+    or4 = shuffle(primary_prompts, 4, 'or')
+    if and2 is not None:
+        all_final_prompts.append(and2)
+    if and3 is not None:
+        all_final_prompts.append(and3)
+    if and4 is not None:
+        all_final_prompts.append(and4)
+    if or2 is not None:
+        all_final_prompts.append(or2)
+    if or3 is not None:
+        all_final_prompts.append(or3)
+    if or4 is not None:
+        all_final_prompts.append(or4)
+
+with open('all_prompts.json', 'w') as json_file:
+    json.dump(all_final_prompts, json_file)
